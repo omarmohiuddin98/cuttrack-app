@@ -1,0 +1,31 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background: #FFFFFF;
+  color: #152019;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.input {
+  @apply bg-white border border-line rounded-md px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-green-light focus:border-green;
+}
+
+.btn {
+  @apply bg-green text-white font-semibold text-sm px-4 py-2 rounded-md hover:bg-green-dark disabled:opacity-40 disabled:cursor-not-allowed;
+}
+
+.btn-secondary {
+  @apply bg-transparent border border-green text-green font-semibold text-sm px-4 py-2 rounded-md hover:bg-green-light;
+}
+
+.panel {
+  @apply bg-green-light border border-line rounded-lg p-5 mb-5;
+}
+
+.card {
+  @apply bg-white border border-line rounded-lg p-4;
+}
