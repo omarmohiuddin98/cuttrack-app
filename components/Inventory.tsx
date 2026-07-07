@@ -1,9 +1,49 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { Material, Lot } from '@/lib/types';
-import { materialLabel, lotLabel } from '@/lib/types';
+import { materialLabel, lotLabel, lotAreaSqm } from '@/lib/types';
 
-export default function Inventory({
+function InventoryGate({ children }: { children: React.ReactNode }) {
+  const [checking, setChecking] = useState(true);
+  const [unlocked, setUnlocked] = useState(false);
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    fetch('/api/inventory-auth').then(r => r.json()).then(d => { setUnlocked(!!d.ok); setChecking(false); });
+  }, []);
+
+  async function submit() {
+    setError('');
+    const res = await fetch('/api/inventory-auth', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password }),
+    });
+    if (res.ok) { setUnlocked(true); setPassword(''); }
+    else setError('Wrong password.');
+  }
+
+  if (checking) return <div className="text-low text-sm">Checking access…</div>;
+  if (!unlocked) {
+    return (
+      <div className="panel max-w-sm">
+        <div className="font-display font-semibold text-sm mb-4">Inventory is password protected</div>
+        <div className="flex flex-col gap-2">
+          <input
+            className="input font-mono" type="password" placeholder="Password" value={password}
+            onChange={e => setPassword(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') submit(); }}
+          />
+          {error && <div className="text-danger text-xs">{error}</div>}
+          <button className="btn" style={{ padding: '6px 12px', fontSize: 12 }} onClick={submit}>Unlock</button>
+        </div>
+      </div>
+    );
+  }
+  return <>{children}</>;
+}
+
+function InventoryContent({
   materials, lots, onChanged,
 }: { materials: Material[]; lots: Lot[]; onChanged: () => void }) {
   const [showNewMat, setShowNewMat] = useState(false);
@@ -58,24 +98,26 @@ export default function Inventory({
         {materials.map(m => {
           const matLots = lots.filter(l => l.material_id === m.id);
           const total = matLots.reduce((s, l) => s + l.sheets_remaining, 0);
+          const totalSqm = matLots.reduce((s, l) => s + l.sheets_remaining * lotAreaSqm(l), 0);
           return (
             <div className="card mb-3" key={m.id}>
               <div className="font-mono font-semibold text-sm flex justify-between items-center mb-2">
                 <span>{materialLabel(m)}</span>
-                <span className="text-low text-xs">{total.toFixed(1)} sheets total (all sizes)</span>
+                <span className="text-low text-xs">{total.toFixed(1)} sheets total (all sizes) · {totalSqm.toFixed(2)} sqm</span>
               </div>
               {matLots.length === 0 && <div className="text-xs text-low">No sheet sizes added yet.</div>}
               {matLots.map(l => {
                 const pct = Math.min(100, Math.round((l.sheets_remaining / LOW_CAP) * 100));
                 const low = l.sheets_remaining <= LOW_CAP * 0.25;
+                const sqm = l.sheets_remaining * lotAreaSqm(l);
                 return (
                   <div key={l.id} className="flex items-center gap-3 py-2 border-t border-line flex-wrap">
                     <div className="font-mono text-sm min-w-[100px]">{lotLabel(l)}</div>
                     <div className="flex-1 min-w-[100px] h-[9px] bg-green-light border border-line rounded overflow-hidden">
                       <div className={`h-full ${low ? 'bg-danger' : 'bg-green'}`} style={{ width: pct + '%' }} />
                     </div>
-                    <div className="font-mono text-sm min-w-[110px] text-right">
-                      {l.sheets_remaining.toFixed(1)} sheets{low && <span className="text-danger"> · low</span>}
+                    <div className="font-mono text-sm min-w-[160px] text-right">
+                      {l.sheets_remaining.toFixed(1)} sheets · {sqm.toFixed(2)} sqm{low && <span className="text-danger"> · low</span>}
                     </div>
                     {addStockLotId === l.id ? (
                       <div className="flex gap-2">
@@ -141,5 +183,13 @@ export default function Inventory({
         )}
       </div>
     </div>
+  );
+}
+
+export default function Inventory(props: { materials: Material[]; lots: Lot[]; onChanged: () => void }) {
+  return (
+    <InventoryGate>
+      <InventoryContent {...props} />
+    </InventoryGate>
   );
 }

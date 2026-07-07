@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseServer } from '@/lib/supabase';
+import { isInventoryAuthed } from '@/lib/auth';
 
 export async function GET() {
   const supabase = supabaseServer();
@@ -9,6 +10,7 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  if (!isInventoryAuthed()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const supabase = supabaseServer();
   const body = await req.json();
   const { name, grade, thickness } = body;

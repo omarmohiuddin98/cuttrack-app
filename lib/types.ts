@@ -41,6 +41,11 @@ export function lotLabel(l: { sheet_w: number; sheet_h: number }) {
   return `${l.sheet_w}×${l.sheet_h}cm`;
 }
 
+// sheet_w and sheet_h are stored in cm, so divide by 100 twice to get sq. meters.
+export function lotAreaSqm(l: { sheet_w: number; sheet_h: number }) {
+  return (l.sheet_w / 100) * (l.sheet_h / 100);
+}
+
 export function ticketMessage(t: Ticket, confirmUrl: string) {
   return `JOB TICKET ${t.number}\nRequested by: ${t.requested_by}\n--------------------------------------------------\n\nMaterial: ${t.material_label}  (from ${t.sheet_size} sheet)\nSize: ${t.w} x ${t.h} cm  |  Qty: ${t.qty}${t.notes ? '\nNotes: ' + t.notes : ''}\n\nTap to confirm once cut: ${confirmUrl}`;
 }
