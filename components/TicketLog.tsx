@@ -43,7 +43,8 @@ export default function TicketLog({
       {filtered.length === 0 ? (
         <div className="text-low text-sm text-center py-6">No tickets yet — create one from the New Ticket tab.</div>
       ) : (
-        <table className="w-full text-sm border-collapse">
+        <div className="overflow-x-auto">
+        <table className="w-full text-sm border-collapse whitespace-nowrap">
           <thead>
             <tr className="text-left text-low text-[11px] uppercase tracking-wide border-b border-line">
               <th className="py-2 px-2">Ticket</th><th className="py-2 px-2">Date</th><th className="py-2 px-2">Customer</th>
@@ -71,6 +72,7 @@ export default function TicketLog({
             ))}
           </tbody>
         </table>
+        </div>
       )}
     </div>
   );
