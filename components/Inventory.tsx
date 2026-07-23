@@ -117,7 +117,7 @@ function InventoryContent({
                       const pct = Math.min(100, Math.round((remaining / LOW_CAP) * 100));
                       const low = remaining <= LOW_CAP * 0.25;
                       const sqm = remaining * lotAreaSqm({ sheet_w: sheetW, sheet_h: sheetH });
-                      const cellKey = `${sizeKey}-${loc}`;
+                      const cellKey = `${m.id}-${sizeKey}-${loc}`;
                       return (
                         <div key={cellKey} className="flex items-center gap-3 py-1 pl-3 flex-wrap">
                           <span className="text-[11px] px-2 py-1 rounded-full font-semibold bg-green-light text-green-dark min-w-[70px] text-center">{loc}</span>
