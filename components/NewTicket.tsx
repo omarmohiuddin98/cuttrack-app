@@ -24,11 +24,12 @@ export default function NewTicket({
   const [submitting, setSubmitting] = useState(false);
   const [err, setErr] = useState('');
 
-  const matLots = lots.filter(l => l.material_id === materialId);
+  const matLots = lots.filter(l => l.material_id === materialId && l.location === sourceLocation);
 
   useEffect(() => {
     if (matLots.length && !matLots.find(l => l.id === lotId)) setLotId(matLots[0].id);
-  }, [materialId, lots]);
+    if (!matLots.length) setLotId('');
+  }, [materialId, sourceLocation, lots]);
 
   const lot = lots.find(l => l.id === lotId);
   const areaNeeded = (parseFloat(w) || 0) * (parseFloat(h) || 0) * (parseInt(qty) || 0);
@@ -92,12 +93,21 @@ export default function NewTicket({
               </select>
             </div>
             <div className="flex-1 min-w-[160px] flex flex-col gap-1">
+              <label className="text-xs text-mid">Source location</label>
+              <select className="input" value={sourceLocation} onChange={e => setSourceLocation(e.target.value as 'Office' | 'Workshop')}>
+                <option>Office</option>
+                <option>Workshop</option>
+              </select>
+            </div>
+          </div>
+          <div className="flex gap-3 flex-wrap">
+            <div className="flex-1 min-w-[160px] flex flex-col gap-1">
               <label className="text-xs text-mid">Sheet size to cut from</label>
               {matLots.length ? (
                 <select className="input" value={lotId} onChange={e => setLotId(e.target.value)}>
                   {matLots.map(l => <option key={l.id} value={l.id}>{lotLabel(l)}</option>)}
                 </select>
-              ) : <div className="text-xs text-danger">No stock — add it in Inventory</div>}
+              ) : <div className="text-xs text-danger">No {sourceLocation} stock for this material — add it in Inventory</div>}
             </div>
             <div className="flex-1 min-w-[160px] flex flex-col gap-1">
               <label className="text-xs text-mid">Stock remaining</label>
@@ -124,13 +134,6 @@ export default function NewTicket({
             <div className="flex-1 min-w-[160px] flex flex-col gap-1">
               <label className="text-xs text-mid">Requested by</label>
               <input className="input" value={requestedBy} onChange={e => setRequestedBy(e.target.value)} required />
-            </div>
-            <div className="flex-1 min-w-[160px] flex flex-col gap-1">
-              <label className="text-xs text-mid">Source location</label>
-              <select className="input" value={sourceLocation} onChange={e => setSourceLocation(e.target.value as 'Office' | 'Workshop')}>
-                <option>Office</option>
-                <option>Workshop</option>
-              </select>
             </div>
             <div className="flex-1 min-w-[160px] flex flex-col gap-1">
               <label className="text-xs text-mid">Notes (optional)</label>

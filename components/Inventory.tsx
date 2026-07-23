@@ -48,6 +48,7 @@ function InventoryContent({
   const [lotW, setLotW] = useState('');
   const [lotH, setLotH] = useState('');
   const [lotCount, setLotCount] = useState('');
+  const [lotLocation, setLotLocation] = useState<'Office' | 'Workshop'>('Office');
   const [addStockLotId, setAddStockLotId] = useState<string | null>(null);
   const [addStockAmt, setAddStockAmt] = useState('');
 
@@ -65,18 +66,18 @@ function InventoryContent({
     if (!lotW || !lotH || !lotCount) return;
     await fetch('/api/lots', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ material_id: materialId, sheet_w: parseFloat(lotW), sheet_h: parseFloat(lotH), sheets: parseFloat(lotCount) }),
+      body: JSON.stringify({ material_id: materialId, sheet_w: parseFloat(lotW), sheet_h: parseFloat(lotH), sheets: parseFloat(lotCount), location: lotLocation }),
     });
-    setAddLotFor(null); setLotW(''); setLotH(''); setLotCount('');
+    setAddLotFor(null); setLotW(''); setLotH(''); setLotCount(''); setLotLocation('Office');
     onChanged();
   }
 
-  async function addStock(lotId: string, materialId: string, sheetW: number, sheetH: number) {
+  async function addStock(lotId: string, materialId: string, sheetW: number, sheetH: number, location: 'Office' | 'Workshop') {
     const n = parseFloat(addStockAmt);
     if (!n || n <= 0) return;
     await fetch('/api/lots', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ material_id: materialId, sheet_w: sheetW, sheet_h: sheetH, sheets: n }),
+      body: JSON.stringify({ material_id: materialId, sheet_w: sheetW, sheet_h: sheetH, sheets: n, location }),
     });
     setAddStockLotId(null); setAddStockAmt('');
     onChanged();
@@ -93,11 +94,16 @@ function InventoryContent({
           const matLots = lots.filter(l => l.material_id === m.id);
           const total = matLots.reduce((s, l) => s + l.sheets_remaining, 0);
           const totalSqm = matLots.reduce((s, l) => s + l.sheets_remaining * lotAreaSqm(l), 0);
+          const officeTotal = matLots.filter(l => l.location === 'Office').reduce((s, l) => s + l.sheets_remaining, 0);
+          const workshopTotal = matLots.filter(l => l.location === 'Workshop').reduce((s, l) => s + l.sheets_remaining, 0);
           return (
             <div className="card mb-3" key={m.id}>
               <div className="font-mono font-semibold text-sm flex justify-between items-center mb-2">
                 <span>{materialLabel(m)}</span>
-                <span className="text-low text-xs">{total.toFixed(1)} sheets total (all sizes) · {totalSqm.toFixed(2)} sqm</span>
+                <span className="text-low text-xs">
+                  {total.toFixed(1)} sheets total (all sizes) · {totalSqm.toFixed(2)} sqm
+                  {' '}— Office: {officeTotal.toFixed(1)} · Workshop: {workshopTotal.toFixed(1)}
+                </span>
               </div>
               {matLots.length === 0 && <div className="text-xs text-low">No sheet sizes added yet.</div>}
               {matLots.map(l => {
@@ -107,6 +113,7 @@ function InventoryContent({
                 return (
                   <div key={l.id} className="flex items-center gap-3 py-2 border-t border-line flex-wrap">
                     <div className="font-mono text-sm min-w-[100px]">{lotLabel(l)}</div>
+                    <span className="text-[11px] px-2 py-1 rounded-full font-semibold bg-green-light text-green-dark">{l.location}</span>
                     <div className="flex-1 min-w-[100px] h-[9px] bg-green-light border border-line rounded overflow-hidden">
                       <div className={`h-full ${low ? 'bg-danger' : 'bg-green'}`} style={{ width: pct + '%' }} />
                     </div>
@@ -116,7 +123,7 @@ function InventoryContent({
                     {addStockLotId === l.id ? (
                       <div className="flex gap-2">
                         <input className="input w-[70px] font-mono" type="number" min="0" value={addStockAmt} onChange={e => setAddStockAmt(e.target.value)} />
-                        <button className="btn" style={{ padding: '6px 12px', fontSize: 12 }} onClick={() => addStock(l.id, m.id, l.sheet_w, l.sheet_h)}>Add</button>
+                        <button className="btn" style={{ padding: '6px 12px', fontSize: 12 }} onClick={() => addStock(l.id, m.id, l.sheet_w, l.sheet_h, l.location)}>Add</button>
                         <button className="btn-secondary" style={{ padding: '6px 12px', fontSize: 12 }} onClick={() => { setAddStockLotId(null); setAddStockAmt(''); }}>Cancel</button>
                       </div>
                     ) : (
@@ -130,6 +137,13 @@ function InventoryContent({
                   <div className="flex flex-col gap-1"><label className="text-xs text-mid">Sheet width (cm)</label><input className="input font-mono" type="number" value={lotW} onChange={e => setLotW(e.target.value)} /></div>
                   <div className="flex flex-col gap-1"><label className="text-xs text-mid">Sheet height (cm)</label><input className="input font-mono" type="number" value={lotH} onChange={e => setLotH(e.target.value)} /></div>
                   <div className="flex flex-col gap-1"><label className="text-xs text-mid">Sheets in stock</label><input className="input font-mono" type="number" min="0" value={lotCount} onChange={e => setLotCount(e.target.value)} /></div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-mid">Location</label>
+                    <select className="input" value={lotLocation} onChange={e => setLotLocation(e.target.value as 'Office' | 'Workshop')}>
+                      <option>Office</option>
+                      <option>Workshop</option>
+                    </select>
+                  </div>
                   <div className="flex items-end gap-2">
                     <button className="btn" style={{ padding: '6px 12px', fontSize: 12 }} onClick={() => addLot(m.id)}>Save size</button>
                     <button className="btn-secondary" style={{ padding: '6px 12px', fontSize: 12 }} onClick={() => setAddLotFor(null)}>Cancel</button>

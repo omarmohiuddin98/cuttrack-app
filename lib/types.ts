@@ -11,6 +11,7 @@ export type Lot = {
   sheet_w: number;
   sheet_h: number;
   sheets_remaining: number;
+  location: 'Office' | 'Workshop';
 };
 
 export type Ticket = {

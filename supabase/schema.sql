@@ -17,6 +17,7 @@ create table lots (
   sheet_w numeric not null,
   sheet_h numeric not null,
   sheets_remaining numeric not null default 0,
+  location text not null default 'Office' check (location in ('Office','Workshop')),
   created_at timestamptz not null default now()
 );
 

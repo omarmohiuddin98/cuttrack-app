@@ -14,9 +14,12 @@ export async function POST(req: Request) {
   if (!isInventoryAuthed()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const supabase = supabaseServer();
   const body = await req.json();
-  const { material_id, sheet_w, sheet_h, sheets } = body;
-  if (!material_id || !sheet_w || !sheet_h || !sheets) {
-    return NextResponse.json({ error: 'material_id, sheet_w, sheet_h, sheets are required' }, { status: 400 });
+  const { material_id, sheet_w, sheet_h, sheets, location } = body;
+  if (!material_id || !sheet_w || !sheet_h || !sheets || !location) {
+    return NextResponse.json({ error: 'material_id, sheet_w, sheet_h, sheets, location are required' }, { status: 400 });
+  }
+  if (location !== 'Office' && location !== 'Workshop') {
+    return NextResponse.json({ error: 'Invalid location' }, { status: 400 });
   }
 
   const { data: existing } = await supabase
@@ -25,6 +28,7 @@ export async function POST(req: Request) {
     .eq('material_id', material_id)
     .eq('sheet_w', sheet_w)
     .eq('sheet_h', sheet_h)
+    .eq('location', location)
     .maybeSingle();
 
   if (existing) {
@@ -40,7 +44,7 @@ export async function POST(req: Request) {
 
   const { data, error } = await supabase
     .from('lots')
-    .insert({ material_id, sheet_w, sheet_h, sheets_remaining: Number(sheets) })
+    .insert({ material_id, sheet_w, sheet_h, sheets_remaining: Number(sheets), location })
     .select()
     .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
