@@ -13,18 +13,18 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [lastTicket, setLastTicket] = useState<Ticket | null>(null);
 
-  async function loadAll() {
-    setLoading(true);
+  async function loadAll(showLoading = false) {
+    if (showLoading) setLoading(true);
     const [m, l, t] = await Promise.all([
       fetch('/api/materials').then(r => r.json()),
       fetch('/api/lots').then(r => r.json()),
       fetch('/api/tickets').then(r => r.json()),
     ]);
     setMaterials(m); setLots(l); setTickets(t);
-    setLoading(false);
+    if (showLoading) setLoading(false);
   }
 
-  useEffect(() => { loadAll(); }, []);
+  useEffect(() => { loadAll(true); }, []);
 
   if (loading) {
     return <div className="p-10 text-low font-mono">Loading CutTrack…</div>;
