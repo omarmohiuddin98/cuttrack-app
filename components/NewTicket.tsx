@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import type { Material, Lot, Ticket } from '@/lib/types';
-import { materialLabel, lotLabel, ticketMessage } from '@/lib/types';
+import { materialLabel, lotLabel, lotAreaSqm, ticketMessage } from '@/lib/types';
 
 export default function NewTicket({
   materials, lots, lastTicket, onCreated,
@@ -18,6 +18,7 @@ export default function NewTicket({
   const [h, setH] = useState('');
   const [qty, setQty] = useState('1');
   const [requestedBy, setRequestedBy] = useState('');
+  const [sourceLocation, setSourceLocation] = useState<'Office' | 'Workshop'>('Office');
   const [notes, setNotes] = useState('');
   const [copyMsg, setCopyMsg] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -47,7 +48,7 @@ export default function NewTicket({
         body: JSON.stringify({
           customer, material_id: materialId, lot_id: lotId,
           w: parseFloat(w), h: parseFloat(h), qty: parseInt(qty),
-          requested_by: requestedBy, notes,
+          requested_by: requestedBy, source_location: sourceLocation, notes,
         }),
       });
       if (!res.ok) throw new Error('failed');
@@ -94,9 +95,15 @@ export default function NewTicket({
               <label className="text-xs text-mid">Sheet size to cut from</label>
               {matLots.length ? (
                 <select className="input" value={lotId} onChange={e => setLotId(e.target.value)}>
-                  {matLots.map(l => <option key={l.id} value={l.id}>{lotLabel(l)} — {l.sheets_remaining.toFixed(1)} left</option>)}
+                  {matLots.map(l => <option key={l.id} value={l.id}>{lotLabel(l)}</option>)}
                 </select>
               ) : <div className="text-xs text-danger">No stock — add it in Inventory</div>}
+            </div>
+            <div className="flex-1 min-w-[160px] flex flex-col gap-1">
+              <label className="text-xs text-mid">Stock remaining</label>
+              <div className="input font-mono flex items-center bg-green-light/50">
+                {lot ? `${lot.sheets_remaining.toFixed(1)} sheets · ${(lot.sheets_remaining * lotAreaSqm(lot)).toFixed(2)} sqm` : '—'}
+              </div>
             </div>
           </div>
           <div className="flex gap-3 flex-wrap">
@@ -119,6 +126,13 @@ export default function NewTicket({
               <input className="input" value={requestedBy} onChange={e => setRequestedBy(e.target.value)} required />
             </div>
             <div className="flex-1 min-w-[160px] flex flex-col gap-1">
+              <label className="text-xs text-mid">Source location</label>
+              <select className="input" value={sourceLocation} onChange={e => setSourceLocation(e.target.value as 'Office' | 'Workshop')}>
+                <option>Office</option>
+                <option>Workshop</option>
+              </select>
+            </div>
+            <div className="flex-1 min-w-[160px] flex flex-col gap-1">
               <label className="text-xs text-mid">Notes (optional)</label>
               <input className="input" value={notes} onChange={e => setNotes(e.target.value)} />
             </div>
@@ -138,7 +152,7 @@ export default function NewTicket({
             {lastTicket.number}{lastTicket.over_stock && <span className="text-danger text-xs ml-2">⚠ over stock</span>}
           </div>
           <div className="text-sm text-mid mt-1">{lastTicket.material_label} ({lastTicket.sheet_size}) · {lastTicket.w}×{lastTicket.h} cm · qty {lastTicket.qty}</div>
-          <div className="text-sm text-mid">Requested by <b className="text-ink">{lastTicket.requested_by}</b></div>
+          <div className="text-sm text-mid">Requested by <b className="text-ink">{lastTicket.requested_by}</b> · <b className="text-ink">{lastTicket.source_location}</b></div>
           <div className="bg-green-light border border-line rounded-md p-3 mt-3 font-mono text-xs whitespace-pre-wrap text-ink">
             {ticketMessage(lastTicket, confirmUrl)}
           </div>

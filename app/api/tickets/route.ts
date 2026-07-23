@@ -12,10 +12,13 @@ export async function GET() {
 export async function POST(req: Request) {
   const supabase = supabaseServer();
   const body = await req.json();
-  const { customer, material_id, lot_id, w, h, qty, requested_by, notes } = body;
+  const { customer, material_id, lot_id, w, h, qty, requested_by, source_location, notes } = body;
 
-  if (!customer || !material_id || !lot_id || !w || !h || !qty || !requested_by) {
+  if (!customer || !material_id || !lot_id || !w || !h || !qty || !requested_by || !source_location) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+  }
+  if (source_location !== 'Office' && source_location !== 'Workshop') {
+    return NextResponse.json({ error: 'Invalid source_location' }, { status: 400 });
   }
 
   const { data: material, error: matErr } = await supabase.from('materials').select('*').eq('id', material_id).single();
@@ -47,6 +50,7 @@ export async function POST(req: Request) {
       sheet_size: lotLabel(lot),
       w, h, qty,
       requested_by,
+      source_location,
       notes: notes || null,
       status: 'open',
       over_stock: overStock,

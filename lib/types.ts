@@ -26,6 +26,7 @@ export type Ticket = {
   h: number;
   qty: number;
   requested_by: string;
+  source_location: 'Office' | 'Workshop';
   notes: string | null;
   status: 'open' | 'cut';
   over_stock: boolean;
@@ -47,5 +48,5 @@ export function lotAreaSqm(l: { sheet_w: number; sheet_h: number }) {
 }
 
 export function ticketMessage(t: Ticket, confirmUrl: string) {
-  return `JOB TICKET ${t.number}\nRequested by: ${t.requested_by}\n--------------------------------------------------\n\nMaterial: ${t.material_label}  (from ${t.sheet_size} sheet)\nSize: ${t.w} x ${t.h} cm  |  Qty: ${t.qty}${t.notes ? '\nNotes: ' + t.notes : ''}\n\nTap to confirm once cut: ${confirmUrl}`;
+  return `JOB TICKET ${t.number}\nRequested by: ${t.requested_by}  (${t.source_location})\n--------------------------------------------------\n\nMaterial: ${t.material_label}  (from ${t.sheet_size} sheet)\nSize: ${t.w} x ${t.h} cm  |  Qty: ${t.qty}${t.notes ? '\nNotes: ' + t.notes : ''}\n\nTap to confirm once cut: ${confirmUrl}`;
 }

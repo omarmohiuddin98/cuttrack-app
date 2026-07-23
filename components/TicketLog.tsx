@@ -49,7 +49,7 @@ export default function TicketLog({
             <tr className="text-left text-low text-[11px] uppercase tracking-wide border-b border-line">
               <th className="py-2 px-2">Ticket</th><th className="py-2 px-2">Date</th><th className="py-2 px-2">Customer</th>
               <th className="py-2 px-2">Material</th><th className="py-2 px-2">Sheet</th><th className="py-2 px-2">Size / Qty</th>
-              <th className="py-2 px-2">Requested by</th><th className="py-2 px-2">Status</th><th className="py-2 px-2">Confirm</th>
+              <th className="py-2 px-2">Requested by</th><th className="py-2 px-2">Source</th><th className="py-2 px-2">Status</th><th className="py-2 px-2">Confirm</th>
             </tr>
           </thead>
           <tbody>
@@ -62,6 +62,7 @@ export default function TicketLog({
                 <td className="py-2 px-2 font-mono text-mid">{t.sheet_size}</td>
                 <td className="py-2 px-2 font-mono text-mid">{t.w}×{t.h} × {t.qty}</td>
                 <td className="py-2 px-2 text-mid">{t.requested_by}</td>
+                <td className="py-2 px-2 text-mid">{t.source_location}</td>
                 <td className="py-2 px-2">
                   <span className={`text-[11px] px-2 py-1 rounded-full font-semibold ${t.status === 'cut' ? 'bg-[#DDF0E4] text-green-dark' : 'bg-green-light text-green-dark'}`}>
                     {t.status === 'cut' ? 'CUT' : 'OPEN'}

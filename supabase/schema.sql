@@ -35,6 +35,7 @@ create table tickets (
   h numeric not null,
   qty integer not null,
   requested_by text not null,
+  source_location text not null default 'Office' check (source_location in ('Office','Workshop')),
   notes text,
   status text not null default 'open' check (status in ('open','cut')),
   over_stock boolean not null default false,
