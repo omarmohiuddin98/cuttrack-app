@@ -14,11 +14,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
   const res = NextResponse.json({ ok: true });
+  // No maxAge: this is a session cookie, cleared when the browser closes, so
+  // the password is asked again next time instead of being remembered for weeks.
   res.cookies.set(INVENTORY_COOKIE, password, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    maxAge: 60 * 60 * 24 * 30,
     path: '/',
   });
   return res;
