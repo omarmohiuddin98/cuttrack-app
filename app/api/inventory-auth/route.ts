@@ -1,9 +1,5 @@
 import { NextResponse } from 'next/server';
-import { INVENTORY_COOKIE, isInventoryAuthed } from '@/lib/auth';
-
-export async function GET() {
-  return NextResponse.json({ ok: isInventoryAuthed() });
-}
+import { INVENTORY_COOKIE } from '@/lib/auth';
 
 export async function POST(req: Request) {
   const { password } = await req.json();

@@ -1,17 +1,12 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { Material, Lot } from '@/lib/types';
 import { materialLabel, lotLabel, lotAreaSqm } from '@/lib/types';
 
 function InventoryGate({ children }: { children: React.ReactNode }) {
-  const [checking, setChecking] = useState(true);
   const [unlocked, setUnlocked] = useState(false);
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-
-  useEffect(() => {
-    fetch('/api/inventory-auth').then(r => r.json()).then(d => { setUnlocked(!!d.ok); setChecking(false); });
-  }, []);
 
   async function submit() {
     setError('');
@@ -23,7 +18,6 @@ function InventoryGate({ children }: { children: React.ReactNode }) {
     else setError('Wrong password.');
   }
 
-  if (checking) return <div className="text-low text-sm">Checking access…</div>;
   if (!unlocked) {
     return (
       <div className="panel max-w-sm">
